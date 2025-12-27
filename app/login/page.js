@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from '@/components/AuthContext';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -11,6 +12,7 @@ export default function LoginPage() {
   const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { login, demoLogin } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -18,19 +20,9 @@ export default function LoginPage() {
     setMessage('');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (response.ok) {
-        // Set the JWT token in a cookie
-        document.cookie = `token=${data.token}; path=/; max-age=86400; samesite=strict`;
+      const result = await login(email, password);
+      
+      if (result.success) {
         setMessage('Login successful! Redirecting...');
         
         // Redirect to home or previous page
@@ -38,7 +30,7 @@ export default function LoginPage() {
           router.push('/');
         }, 1000);
       } else {
-        setMessage(data.error || 'Login failed');
+        setMessage(result.error || 'Login failed');
       }
     } catch (error) {
       setMessage('An error occurred during login');
@@ -49,26 +41,16 @@ export default function LoginPage() {
   };
 
   const handleDemoLogin = (role = 'patient') => {
-    // For demo purposes, we'll set a mock token
-    // In a real application, this would be handled by the backend
-    const mockPayload = {
-      id: '1',
-      email: 'demo@example.com',
-      role: role === 'admin' ? 'admin' : 'patient',
-      exp: Math.floor(Date.now() / 1000) + 3600 // 1 hour from now
-    };
-    
-    // Create a mock JWT token (header.payload.signature format)
-    const header = btoa(JSON.stringify({ alg: 'none', typ: 'JWT' }));
-    const payload = btoa(JSON.stringify(mockPayload));
-    const mockToken = `${header}.${payload}.`;
-    
-    document.cookie = `token=${mockToken}; path=/; max-age=86400; samesite=strict`;
-    setMessage('Demo login successful! Redirecting...');
-    
-    setTimeout(() => {
-      router.push('/');
-    }, 1000);
+    const result = demoLogin(role);
+    if (result.success) {
+      setMessage('Demo login successful! Redirecting...');
+      
+      setTimeout(() => {
+        router.push('/');
+      }, 1000);
+    } else {
+      setMessage('Demo login failed');
+    }
   };
 
   return (
