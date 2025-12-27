@@ -2,44 +2,27 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { useAuth } from './AuthContext';
 
 export default function AuthGuard({ children, requireAdmin = false }) {
-  const [isAuthorized, setIsAuthorized] = useState(null);
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // Get the JWT token from cookies
-        const token = document.cookie.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-        
-        if (!token) {
-          router.push('/login');
-          return;
-        }
-
-        // Verify token and check role if admin is required
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          if (requireAdmin && payload.role !== 'admin') {
-            router.push('/');
-            return;
-          }
-          setIsAuthorized(true);
-        } catch (e) {
-          console.error('Token verification error:', e);
-          router.push('/login');
-        }
-      } catch (error) {
-        console.error('Auth check error:', error);
+    if (!loading) {
+      if (!user) {
         router.push('/login');
+        return;
       }
-    };
 
-    checkAuth();
-  }, [router, requireAdmin]);
+      if (requireAdmin && !isAdmin) {
+        router.push('/');
+        return;
+      }
+    }
+  }, [user, loading, isAdmin, requireAdmin, router]);
 
-  if (isAuthorized === null) {
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="text-xl">Loading...</div>
@@ -47,7 +30,7 @@ export default function AuthGuard({ children, requireAdmin = false }) {
     );
   }
 
-  if (isAuthorized) {
+  if (user && (!requireAdmin || isAdmin)) {
     return children;
   }
 

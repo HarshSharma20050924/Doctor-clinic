@@ -1,36 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useState, useEffect } from 'react';
+import { useAuth } from './AuthContext';
 
 export default function Navbar() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-
-  // Check login status on component mount
-  useEffect(() => {
-    const token = document.cookie.split('; ').find(row => row.startsWith('token='));
-    if (token) {
-      setIsLoggedIn(true);
-      // Check if user is admin (for simplicity, we'll check if there's a role in the token)
-      try {
-        const tokenValue = token.split('=')[1];
-        const payload = JSON.parse(atob(tokenValue.split('.')[1]));
-        if (payload.role === 'admin') {
-          setIsAdmin(true);
-        }
-      } catch (e) {
-        console.log('Token parsing error', e);
-      }
-    }
-  }, []);
-
-  const handleLogout = () => {
-    document.cookie = 'token=; Max-Age=0; path=/';
-    setIsLoggedIn(false);
-    setIsAdmin(false);
-    window.location.href = '/';
-  };
+  const { user, loading, logout, isAuthenticated, isAdmin } = useAuth();
 
   return (
     <nav className="bg-blue-600 text-white p-4 shadow-md">
@@ -46,7 +20,7 @@ export default function Navbar() {
             <Link href="/doctors" className="hover:text-blue-200 transition">
               Doctors
             </Link>
-            {isLoggedIn && (
+            {isAuthenticated && (
               <Link href="/my-appointments" className="hover:text-blue-200 transition">
                 My Appointments
               </Link>
@@ -59,9 +33,9 @@ export default function Navbar() {
           </div>
         </div>
         <div>
-          {isLoggedIn ? (
+          {isAuthenticated ? (
             <button
-              onClick={handleLogout}
+              onClick={logout}
               className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded transition"
             >
               Logout

@@ -8,7 +8,7 @@ const Appointment = require('../models/Appointment');
  * @param {string} time - The appointment time (HH:MM)
  * @returns {Promise<boolean>} - True if the slot is available, false otherwise
  */
-async function isTimeSlotAvailable(doctor_id, date, time) {
+async function checkAvailability(doctor_id, date, time) {
   // Check if there's already an appointment for this doctor at this date and time
   const existingAppointment = await Appointment.findByDoctorAndDateTime(doctor_id, date, time);
   
@@ -17,5 +17,5 @@ async function isTimeSlotAvailable(doctor_id, date, time) {
 }
 
 module.exports = {
-  isTimeSlotAvailable
+  checkAvailability
 };
