@@ -4,57 +4,52 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AuthGuard from '@/components/AuthGuard';
-
-// Mock data for appointments - in real app, this would come from an API
-const mockAppointments = [
-  {
-    id: 1,
-    patient_name: 'John Doe',
-    doctor_name: 'Dr. John Smith',
-    specialization: 'Cardiologist',
-    date: '2023-12-15',
-    time: '10:30',
-    status: 'pending'
-  },
-  {
-    id: 2,
-    patient_name: 'Jane Smith',
-    doctor_name: 'Dr. Emily Johnson',
-    specialization: 'Dermatologist',
-    date: '2023-12-20',
-    time: '14:00',
-    status: 'pending'
-  },
-  {
-    id: 3,
-    patient_name: 'Robert Brown',
-    doctor_name: 'Dr. Michael Chen',
-    specialization: 'Orthopedic Surgeon',
-    date: '2023-12-22',
-    time: '09:00',
-    status: 'approved'
-  }
-];
+import { appointmentAPI } from '@/services/api';
 
 export default function AdminPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call to fetch appointments
-    setTimeout(() => {
-      setAppointments(mockAppointments);
-      setLoading(false);
-    }, 500);
+    // In a real app, this would fetch from an API
+    const fetchAppointments = async () => {
+      try {
+        // Get all appointments for admin view
+        const result = await appointmentAPI.getAll();
+        
+        if (result.success) {
+          setAppointments(result.data);
+        } else {
+          console.error('Failed to fetch appointments:', result.error);
+          setAppointments([]);
+        }
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+        setAppointments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAppointments();
   }, []);
 
   const updateAppointmentStatus = async (appointmentId, newStatus) => {
-    // In a real app, this would make an API call to update the status
-    console.log(`Updating appointment ${appointmentId} to ${newStatus}`);
-    
-    setAppointments(prev => prev.map(app => 
-      app.id === appointmentId ? { ...app, status: newStatus } : app
-    ));
+    try {
+      const result = await appointmentAPI.updateStatus(appointmentId, newStatus);
+      
+      if (result.success) {
+        // Update the local state to reflect the change
+        setAppointments(prev => prev.map(app => 
+          app.id === appointmentId ? { ...app, status: newStatus } : app
+        ));
+        console.log(`Appointment ${appointmentId} updated to ${newStatus}`);
+      } else {
+        console.error('Failed to update appointment status:', result.error);
+      }
+    } catch (error) {
+      console.error('Error updating appointment status:', error);
+    }
   };
 
   if (loading) {

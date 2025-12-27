@@ -1,48 +1,51 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import DoctorCard from '@/components/DoctorCard';
-
-// Mock data for doctors - in real app, this would come from an API
-const doctors = [
-  {
-    id: 1,
-    name: 'Dr. John Smith',
-    specialization: 'Cardiologist',
-    experience: 12,
-    clinic_name: 'City Heart Clinic',
-    fee: 150,
-    image: '/doctor1.jpg'
-  },
-  {
-    id: 2,
-    name: 'Dr. Emily Johnson',
-    specialization: 'Dermatologist',
-    experience: 8,
-    clinic_name: 'Skin Care Center',
-    fee: 120,
-    image: '/doctor2.jpg'
-  },
-  {
-    id: 3,
-    name: 'Dr. Michael Chen',
-    specialization: 'Orthopedic Surgeon',
-    experience: 15,
-    clinic_name: 'Bone & Joint Clinic',
-    fee: 200,
-    image: '/doctor3.jpg'
-  },
-  {
-    id: 4,
-    name: 'Dr. Sarah Williams',
-    specialization: 'Pediatrician',
-    experience: 10,
-    clinic_name: 'Children Care Hospital',
-    fee: 100,
-    image: '/doctor4.jpg'
-  }
-];
+import { doctorAPI } from '@/services/api';
 
 export default function DoctorsPage() {
+  const [doctors, setDoctors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctors = async () => {
+      try {
+        const result = await doctorAPI.getAll();
+        
+        if (result.success) {
+          setDoctors(result.data);
+        } else {
+          console.error('Failed to fetch doctors:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching doctors:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDoctors();
+  }, []);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-8">Our Doctors</h1>
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-600">Loading doctors...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />

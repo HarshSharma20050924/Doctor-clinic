@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { appointmentAPI } from '@/services/api';
 
 export default function AppointmentForm({ doctorId }) {
   const [date, setDate] = useState('');
