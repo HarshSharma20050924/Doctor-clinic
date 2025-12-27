@@ -1,4 +1,5 @@
 // Migration runner script
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { query } = require('./connection');
