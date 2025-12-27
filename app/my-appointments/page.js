@@ -4,46 +4,33 @@ import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AppointmentListItem from '@/components/AppointmentListItem';
+import { appointmentAPI } from '@/services/api';
 
 export default function MyAppointmentsPage() {
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // In a real app, this would fetch from an API
-    // For now, we'll use mock data
-    const mockAppointments = [
-      {
-        id: 1,
-        doctor_name: 'Dr. John Smith',
-        specialization: 'Cardiologist',
-        date: '2023-12-15',
-        time: '10:30',
-        status: 'approved'
-      },
-      {
-        id: 2,
-        doctor_name: 'Dr. Emily Johnson',
-        specialization: 'Dermatologist',
-        date: '2023-12-20',
-        time: '14:00',
-        status: 'pending'
-      },
-      {
-        id: 3,
-        doctor_name: 'Dr. Michael Chen',
-        specialization: 'Orthopedic Surgeon',
-        date: '2023-12-22',
-        time: '09:00',
-        status: 'cancelled'
+    const fetchAppointments = async () => {
+      try {
+        // In a real application, you would get the patient ID from the authenticated user
+        // For now, we'll use a placeholder ID - in a real app this would come from auth context
+        const patientId = 'placeholder-patient-id'; // This should be replaced with actual patient ID from auth
+        const result = await appointmentAPI.getByPatientId(patientId);
+        
+        if (result.success) {
+          setAppointments(result.data);
+        } else {
+          console.error('Failed to fetch appointments:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching appointments:', error);
+      } finally {
+        setLoading(false);
       }
-    ];
-    
-    // Simulate API call
-    setTimeout(() => {
-      setAppointments(mockAppointments);
-      setLoading(false);
-    }, 500);
+    };
+
+    fetchAppointments();
   }, []);
 
   if (loading) {

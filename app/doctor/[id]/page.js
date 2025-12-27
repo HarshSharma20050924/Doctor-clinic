@@ -1,26 +1,67 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import AppointmentForm from '@/components/AppointmentForm';
 import CalendarSlotPicker from '@/components/CalendarSlotPicker';
-
-// Mock data for doctor - in real app, this would come from an API
-const doctor = {
-  id: 1,
-  name: 'Dr. John Smith',
-  specialization: 'Cardiologist',
-  experience: 12,
-  clinic_name: 'City Heart Clinic',
-  clinic_address: '123 Health St, Medical District',
-  fee: 150,
-  image: '/doctor1.jpg',
-  about: 'Dr. John Smith is a highly experienced cardiologist with over 12 years of practice. He specializes in preventive cardiology and non-invasive cardiac procedures.',
-  education: 'MD from Johns Hopkins University, Cardiology Fellowship at Mayo Clinic',
-  languages: ['English', 'Spanish'],
-  available_days: ['Monday', 'Tuesday', 'Thursday', 'Friday']
-};
+import { doctorAPI } from '@/services/api';
 
 export default function DoctorProfilePage({ params }) {
   const { id } = params;
+  const [doctor, setDoctor] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDoctor = async () => {
+      try {
+        const result = await doctorAPI.getById(id);
+        
+        if (result.success) {
+          setDoctor(result.data);
+        } else {
+          console.error('Failed to fetch doctor:', result.error);
+        }
+      } catch (error) {
+        console.error('Error fetching doctor:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchDoctor();
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <div className="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+            <p className="mt-4 text-gray-600">Loading doctor information...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!doctor) {
+    return (
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-grow container mx-auto px-4 py-8">
+          <div className="text-center py-12">
+            <p className="text-xl text-red-600">Doctor not found</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -52,7 +93,7 @@ export default function DoctorProfilePage({ params }) {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-3">Languages</h2>
                   <ul className="list-disc pl-5 text-gray-700">
-                    {doctor.languages.map((lang, index) => (
+                    {doctor.languages?.map((lang, index) => (
                       <li key={index}>{lang}</li>
                     ))}
                   </ul>
@@ -61,7 +102,7 @@ export default function DoctorProfilePage({ params }) {
                 <div>
                   <h2 className="text-xl font-bold text-gray-800 mb-3">Available Days</h2>
                   <ul className="list-disc pl-5 text-gray-700">
-                    {doctor.available_days.map((day, index) => (
+                    {doctor.available_days?.map((day, index) => (
                       <li key={index}>{day}</li>
                     ))}
                   </ul>

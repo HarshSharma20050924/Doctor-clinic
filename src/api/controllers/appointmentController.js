@@ -74,6 +74,29 @@ const getPatientAppointments = async (req, res) => {
   }
 };
 
+// Get all appointments (admin only)
+const getAllAppointments = async (req, res) => {
+  try {
+    const appointments = await Appointment.findAll();
+    
+    // Format response to match admin API needs
+    const formattedAppointments = appointments.map(appointment => ({
+      id: appointment.id,
+      patient_name: appointment.patient_name || 'Unknown Patient',
+      doctor_name: appointment.doctor_name,
+      specialization: appointment.specialization || 'General',
+      date: appointment.date,
+      time: appointment.time,
+      status: appointment.status
+    }));
+
+    res.json(formattedAppointments);
+  } catch (error) {
+    console.error('Error fetching all appointments:', error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
 // Update appointment status (admin only)
 const updateAppointmentStatus = async (req, res) => {
   try {
@@ -104,5 +127,6 @@ const updateAppointmentStatus = async (req, res) => {
 module.exports = {
   createAppointment,
   getPatientAppointments,
-  updateAppointmentStatus
+  updateAppointmentStatus,
+  getAllAppointments
 };
