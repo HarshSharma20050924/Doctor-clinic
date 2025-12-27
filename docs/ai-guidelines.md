@@ -77,3 +77,10 @@ Deliver a fully functional production-ready doctor appointment website, matching
 Never skip phases.  
 Never hallucinate missing details.  
 Always align with existing documentation.
+
+### AI Must Not Hallucinate
+- Never claim any phase or feature is completed without providing real, runnable code.
+- Always show file structure, paths, and content after any step.
+- Pause if information is missing and ask for clarification.
+- Break tasks into the smallest possible units (one endpoint, one component, one migration at a time).
+
